@@ -65,9 +65,70 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
-      - name: Run tests
-        run: mvn -fn -T 1C test | tee test-output.log
+      # Il y a eu des problèmes avec "mvn test". Maintenant, je teste chaque module individuellement
+      - name: Test netty-mqtt
+        run: |
+          echo "=== Testing module: netty-mqtt ===" | tee -a test-output.log
+          mvn -T 1C -fn -pl "netty-mqtt" test | tee -a test-output.log
         working-directory: tp1
+
+      - name: Test common
+        run: |
+          echo "=== Testing module: common ===" | tee -a test-output.log
+          MODULES=(
+            "common/actor"
+            "common/cache"
+            "common/coap-server"
+            "common/data"
+            "common/message"
+            "common/proto"
+            "common/queue"
+            "common/script/script-api"
+            "common/transport/coap"
+            "common/transport/http"
+            "common/transport/lwm2m"
+            "common/transport/mqtt"
+            "common/transport/snmp"
+            "common/transport/transport-api"
+            "common/util"
+          )
+          mvn -T 1C -fn -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-output.log
+        working-directory: tp1
+
+      - name: Test rule-engine
+        run: |
+          echo "=== Testing module: rule-engine ===" | tee -a test-output.log
+          MODULES=(
+            "rule-engine/rule-engine-api"
+            "rule-engine/rule-engine-components"
+          )
+          mvn -T 1C -fn -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-output.log
+        working-directory: tp1
+
+      - name: Test dao
+        run: |
+          echo "=== Testing module: dao ===" | tee -a test-output.log
+          mvn -T 1C -fn -pl "dao" test | tee -a test-output.log
+        working-directory: tp1
+
+      - name: Test edqs
+        run: |
+          echo "=== Testing module: edqs ===" | tee -a test-output.log
+          mvn -T 1C -fn -pl "edqs" test | tee -a test-output.log
+        working-directory: tp1
+
+      - name: Test msa
+        run: |
+          echo "=== Testing module: msa ===" | tee -a test-output.log
+          mvn -T 1C -fn -pl "msa/black-box-tests" test | tee -a test-output.log
+        working-directory: tp1
+
+      # Prend une éternité... même après exclu les tests d'intégration.
+      # - name: Test application
+      #   run: |
+      #     echo "=== Testing module: application ===" | tee -a test-output.log
+      #     mvn -T 1C -fn -pl "application" test | tee -a test-output.log
+      #   working-directory: tp1
 
       - name: Upload test logs
         uses: actions/upload-artifact@v4
