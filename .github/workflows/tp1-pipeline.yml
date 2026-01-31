@@ -73,7 +73,7 @@ jobs:
       - name: Test netty-mqtt
         run: |
           echo "=== Testing module: netty-mqtt ===" | tee -a test-netty-mqtt.log
-          mvn -T 1C -pl "netty-mqtt" test | tee -a test-netty-mqtt.log
+          mvn -T 2C -pl "netty-mqtt" test | tee -a test-netty-mqtt.log
         working-directory: tp1
 
       - name: Test common
@@ -96,7 +96,7 @@ jobs:
             "common/transport/transport-api"
             "common/util"
           )
-          mvn -T 1C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-common.log
+          mvn -T 2C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-common.log
         working-directory: tp1
 
       - name: Test rule-engine
@@ -106,19 +106,19 @@ jobs:
             "rule-engine/rule-engine-api"
             "rule-engine/rule-engine-components"
           )
-          mvn -T 1C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-rule-engine.log
+          mvn -T 2C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-rule-engine.log
         working-directory: tp1
 
       - name: Test dao
         run: |
           echo "=== Testing module: dao ===" | tee -a test-dao.log
-          mvn -T 1C -pl "dao" test | tee -a test-dao.log
+          mvn -T 2C -pl "dao" test | tee -a test-dao.log
         working-directory: tp1
 
       - name: Test edqs
         run: |
           echo "=== Testing module: edqs ===" | tee -a test-edqs.log
-          mvn -T 1C -pl "edqs" test | tee -a test-edqs.log
+          mvn -T 2C -pl "edqs" test | tee -a test-edqs.log
         working-directory: tp1
 
       ## Prend une éternité  ou reste bloqué... même après avoir exclu les tests d'intégration.
@@ -126,7 +126,7 @@ jobs:
       # - name: Test application
       #   run: |
       #     echo "=== Testing module: application ===" | tee -a test-application.log
-      #     mvn -T 1C -fn -pl "application" test | tee -a test-application.log
+      #     mvn -T 2C -fn -pl "application" test | tee -a test-application.log
       #   working-directory: tp1
 
       - name: Upload test logs
