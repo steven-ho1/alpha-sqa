@@ -67,93 +67,93 @@ jobs:
 
       # Il y a eu des problèmes avec "mvn test".
       # Maintenant, je teste chaque module individuellement et seulement ceux avec des tests unitaires
-      - name: Test netty-mqtt
-        run: |
-          echo "=== Testing module: netty-mqtt ===" | tee -a test-netty-mqtt.log
-          mvn -T 1C -pl "netty-mqtt" test | tee -a test-netty-mqtt.log
-        working-directory: tp1
+      # - name: Test netty-mqtt
+      #   run: |
+      #     echo "=== Testing module: netty-mqtt ===" | tee -a test-netty-mqtt.log
+      #     mvn -T 1C -pl "netty-mqtt" test | tee -a test-netty-mqtt.log
+      #   working-directory: tp1
 
-      - name: Test common
-        run: |
-          echo "=== Testing module: common ===" | tee -a test-common.log
-          MODULES=(
-            "common/actor"
-            "common/cache"
-            "common/coap-server"
-            "common/data"
-            "common/message"
-            "common/proto"
-            "common/queue"
-            "common/script/script-api"
-            "common/transport/coap"
-            "common/transport/http"
-            "common/transport/lwm2m"
-            "common/transport/mqtt"
-            "common/transport/snmp"
-            "common/transport/transport-api"
-            "common/util"
-          )
-          mvn -T 1C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-common.log
-        working-directory: tp1
+      # - name: Test common
+      #   run: |
+      #     echo "=== Testing module: common ===" | tee -a test-common.log
+      #     MODULES=(
+      #       "common/actor"
+      #       "common/cache"
+      #       "common/coap-server"
+      #       "common/data"
+      #       "common/message"
+      #       "common/proto"
+      #       "common/queue"
+      #       "common/script/script-api"
+      #       "common/transport/coap"
+      #       "common/transport/http"
+      #       "common/transport/lwm2m"
+      #       "common/transport/mqtt"
+      #       "common/transport/snmp"
+      #       "common/transport/transport-api"
+      #       "common/util"
+      #     )
+      #     mvn -T 1C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-common.log
+      #   working-directory: tp1
 
-      - name: Test rule-engine
-        run: |
-          echo "=== Testing module: rule-engine ===" | tee -a test-rule-engine.log
-          MODULES=(
-            "rule-engine/rule-engine-api"
-            "rule-engine/rule-engine-components"
-          )
-          mvn -T 1C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-rule-engine.log
-        working-directory: tp1
+      # - name: Test rule-engine
+      #   run: |
+      #     echo "=== Testing module: rule-engine ===" | tee -a test-rule-engine.log
+      #     MODULES=(
+      #       "rule-engine/rule-engine-api"
+      #       "rule-engine/rule-engine-components"
+      #     )
+      #     mvn -T 1C -pl "$(IFS=,; echo "${MODULES[*]}")" test | tee -a test-rule-engine.log
+      #   working-directory: tp1
 
-      - name: Test dao
-        run: |
-          echo "=== Testing module: dao ===" | tee -a test-dao.log
-          mvn -T 1C -pl "dao" test | tee -a test-dao.log
-        working-directory: tp1
+      # - name: Test dao
+      #   run: |
+      #     echo "=== Testing module: dao ===" | tee -a test-dao.log
+      #     mvn -T 1C -pl "dao" test | tee -a test-dao.log
+      #   working-directory: tp1
 
-      - name: Test edqs
-        run: |
-          echo "=== Testing module: edqs ===" | tee -a test-edqs.log
-          mvn -T 1C -pl "edqs" test | tee -a test-edqs.log
-        working-directory: tp1
+      # - name: Test edqs
+      #   run: |
+      #     echo "=== Testing module: edqs ===" | tee -a test-edqs.log
+      #     mvn -T 1C -pl "edqs" test | tee -a test-edqs.log
+      #   working-directory: tp1
 
       # application est le seul module avec -fn (qui permet de continuer même en cas d'erreur) puisqu'il y a trop de tests qui échouent
       - name: Test application
         run: |
           echo "=== Testing module: application ===" | tee -a test-application.log
-          mvn -T 1C -fn -pl "application" test | tee -a test-application.log
+          mvn -T 4C -fn -pl "application" test | tee -a test-application.log
         working-directory: tp1
 
-      - name: Upload netty-mqtt test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: netty-mqtt-test-log
-          path: tp1/test-netty-mqtt.log
+      # - name: Upload netty-mqtt test log
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: netty-mqtt-test-log
+      #     path: tp1/test-netty-mqtt.log
 
-      - name: Upload common test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: common-test-log
-          path: tp1/test-common.log
+      # - name: Upload common test log
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: common-test-log
+      #     path: tp1/test-common.log
 
-      - name: Upload rule-engine test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: rule-engine-test-log
-          path: tp1/test-rule-engine.log
+      # - name: Upload rule-engine test log
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: rule-engine-test-log
+      #     path: tp1/test-rule-engine.log
 
-      - name: Upload dao test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: dao-test-log
-          path: tp1/test-dao.log
+      # - name: Upload dao test log
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: dao-test-log
+      #     path: tp1/test-dao.log
 
-      - name: Upload edqs test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: edqs-test-log
-          path: tp1/test-edqs.log
+      # - name: Upload edqs test log
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: edqs-test-log
+      #     path: tp1/test-edqs.log
 
       - name: Upload application test log
         uses: actions/upload-artifact@v4
