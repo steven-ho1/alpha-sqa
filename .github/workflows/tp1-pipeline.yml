@@ -129,40 +129,16 @@ jobs:
       #     mvn -T 1C -fn -pl "application" test | tee -a test-application.log
       #   working-directory: tp1
 
-      - name: Upload netty-mqtt test log
+      - name: Upload test logs
         uses: actions/upload-artifact@v4
         with:
-          name: netty-mqtt-test-log
-          path: tp1/test-netty-mqtt.log
-
-      - name: Upload common test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: common-test-log
-          path: tp1/test-common.log
-
-      - name: Upload rule-engine test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: rule-engine-test-log
-          path: tp1/test-rule-engine.log
-
-      - name: Upload dao test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: dao-test-log
-          path: tp1/test-dao.log
-
-      - name: Upload edqs test log
-        uses: actions/upload-artifact@v4
-        with:
-          name: edqs-test-log
-          path: tp1/test-edqs.log
-
-      # - name: Upload application test log
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: application-test-log
-      #     path: tp1/test-application.log
+          name: test-logs
+          path: |
+            tp1/test-netty-mqtt.log
+            tp1/test-common.log
+            tp1/test-rule-engine.log
+            tp1/test-dao.log
+            tp1/test-edqs.log
+          # tp1/test-application.log
 
   # TODO: Ajouter job pour exécuter thingsboard
