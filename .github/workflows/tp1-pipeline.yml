@@ -15,6 +15,9 @@ jobs:
       - name: Show memory info
         run: cat /proc/meminfo
 
+      - name: Show CPU info
+        run: lscpu
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
