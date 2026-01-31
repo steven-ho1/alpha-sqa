@@ -118,12 +118,11 @@ jobs:
           mvn -T 1C -fn -pl "edqs" test | tee -a test-edqs.log
         working-directory: tp1
 
-      ## Prend une éternité... même après exclu les tests d'intégration.
-      # - name: Test application
-      #   run: |
-      #     echo "=== Testing module: application ===" | tee -a test-application.log
-      #     mvn -T 1C -fn -pl "application" test | tee -a test-application.log
-      #   working-directory: tp1
+      - name: Test application
+        run: |
+          echo "=== Testing module: application ===" | tee -a test-application.log
+          mvn -T 1C -fn -pl "application" test | tee -a test-application.log
+        working-directory: tp1
 
       - name: Upload netty-mqtt test log
         uses: actions/upload-artifact@v4
@@ -155,8 +154,8 @@ jobs:
           name: edqs-test-log
           path: tp1/test-edqs.log
 
-      # - name: Upload application test log
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: application-test-log
-      #     path: tp1/test-application.log
+      - name: Upload application test log
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-test-log
+          path: tp1/test-application.log
