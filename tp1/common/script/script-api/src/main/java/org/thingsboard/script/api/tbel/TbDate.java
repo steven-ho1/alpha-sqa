@@ -604,6 +604,10 @@ public class TbDate implements Serializable, Cloneable {
         // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 GMT"
         // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 GMT-02:00"
         // assuming RFC-1123 value "Tue, 3 Jun 2008 11:05:30 -0200"
+        if (!s.contains("GMT") && !s.contains("+") && !s.contains("-")) {
+            s = s.trim() + " GMT"; // Add " GMT" to the date if no time zone is specified
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
         try {
             return Instant.from(formatter.parse(s));
