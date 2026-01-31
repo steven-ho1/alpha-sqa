@@ -65,7 +65,8 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
 
-      # Il y a eu des problèmes avec "mvn test". Maintenant, je teste chaque module individuellement
+      # Il y a eu des problèmes avec "mvn test".
+      # Maintenant, je teste chaque module individuellement et seulement ceux avec des tests unitaires
       - name: Test netty-mqtt
         run: |
           echo "=== Testing module: netty-mqtt ===" | tee -a test-output.log
@@ -117,13 +118,7 @@ jobs:
           mvn -T 1C -fn -pl "edqs" test | tee -a test-output.log
         working-directory: tp1
 
-      - name: Test msa
-        run: |
-          echo "=== Testing module: msa ===" | tee -a test-output.log
-          mvn -T 1C -fn -pl "msa/black-box-tests" test | tee -a test-output.log
-        working-directory: tp1
-
-      # Prend une éternité... même après exclu les tests d'intégration.
+      ## Prend une éternité... même après exclu les tests d'intégration.
       # - name: Test application
       #   run: |
       #     echo "=== Testing module: application ===" | tee -a test-output.log
