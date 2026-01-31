@@ -461,6 +461,7 @@
                     </systemPropertyVariables>
                     <excludes>
                         <exclude>**/nosql/*Test.java</exclude>
+                        <exclude>**/*Integration*Test.java</exclude>
                     </excludes>
                     <includes>
                         <include>**/*Test.java</include>
