@@ -118,6 +118,7 @@ jobs:
           mvn -T 1C -pl "edqs" test | tee -a test-edqs.log
         working-directory: tp1
 
+      # application est le seul module avec -fn (qui permet de continuer même en cas d'erreur) puisqu'il y a trop de tests qui échouent
       - name: Test application
         run: |
           echo "=== Testing module: application ===" | tee -a test-application.log
@@ -159,3 +160,5 @@ jobs:
         with:
           name: application-test-log
           path: tp1/test-application.log
+
+  # TODO: Ajouter job pour exécuter thingsboard
