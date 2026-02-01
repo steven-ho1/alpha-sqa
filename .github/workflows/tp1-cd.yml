@@ -70,5 +70,7 @@ jobs:
 
       - name: "FAILURE: Clean up EC2"
         if: failure()
-        run: python cleanup.py
+        run: |
+          source venv/bin/activate
+          python cleanup.py
         working-directory: ec2-provision
