@@ -40,7 +40,6 @@ jobs:
           REMOTE_TARGET: thingsboard/
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rlgoDzvc -i --delete"
           SOURCE: "tp1/"
           REMOTE_HOST: ${{ env.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
