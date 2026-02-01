@@ -1,9 +1,8 @@
-import logging
-
 from constants import (
     INSTANCE_NAME,
     INSTANCE_TYPE,
 )
+from logger import logger
 from provision import (
     get_or_provision_instance,
     validate_credentials,
@@ -11,7 +10,7 @@ from provision import (
 
 
 def main():
-    logging.info("🦊🍃 Starting EC2 provisioning...")
+    logger.info("🦊🍃 Starting EC2 provisioning...")
 
     validate_credentials()
 

@@ -1,7 +1,6 @@
-import logging
-
 import boto3
 import constants
+from logger import logger
 
 ec2 = boto3.resource(
     "ec2",
@@ -14,14 +13,14 @@ ec2 = boto3.resource(
 def validate_credentials():
     try:
         # https://stackoverflow.com/questions/53548737/verify-aws-credentials-with-boto3
-        logging.info("⚙️  Validating credentials...")
+        logger.info("⚙️  Validating credentials...")
         sts = boto3.client(
             "sts",
             aws_access_key_id=constants.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=constants.AWS_SECRET_ACCESS_KEY,
         )
         sts.get_caller_identity()
-        logging.info("Credentials validated")
+        logger.info("Credentials validated")
     except Exception:
         raise RuntimeError(
             "Error: Failed to authenticate with AWS. Are your credentials from .env valid?"
@@ -53,16 +52,16 @@ def ensure_security_group():
                 },
             ]
         )
-        logging.info(f"Created security group: {sg.group_id}")
+        logger.info(f"Created security group: {sg.group_id}")
         return sg.group_id
 
 
 def get_or_provision_instance(name, user_data, instance_type):
-    logging.info(f"⚙️  Provisioning {name} EC2 instance...")
+    logger.info(f"⚙️  Provisioning {name} EC2 instance...")
 
     existing_instance = find_running_instance(name)
     if existing_instance:
-        logging.info(
+        logger.info(
             f"Found existing instance for {name}: ({existing_instance.id}, {existing_instance.public_ip_address})"
         )
         return existing_instance
@@ -75,7 +74,7 @@ def provision_ec2_instance(name, user_data, instance_type):
         MinCount=1,
         MaxCount=1,
         KeyName=constants.AWS_KEY_PAIR_NAME,
-        InstanceType=instance_type.value,
+        InstanceType=instance_type,
         SecurityGroupIds=[ensure_security_group()],
         TagSpecifications=[
             {"ResourceType": "instance", "Tags": [{"Key": "Name", "Value": name}]}
@@ -85,12 +84,12 @@ def provision_ec2_instance(name, user_data, instance_type):
     instance = ec2.create_instances(**params)[0]
     instance.wait_until_running()
     instance.reload()
-    logging.info(f"{name} instance created")
+    logger.info(f"{name} instance created")
 
-    logging.info(
+    logger.info(
         f"✅ {name} provisioned (ID: {instance.id}, IP: {instance.public_ip_address})"
     )
-    logging.warning("The instance will shutdown in 20 minutes for resource efficiency.")
+    logger.warning("The instance will shutdown in 20 minutes for resource efficiency.")
     return instance
 
 

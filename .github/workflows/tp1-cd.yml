@@ -29,7 +29,7 @@ jobs:
 
       # https://www.baeldung.com/ops/github-actions-deploy-ec2
       # On utilise l'action easingthemes/ssh-deploy pour nous connecter via SSH et transférer les fichiers.
-      # C'est beaucoup plus simple que la méthode traditionnelle de push les images Docker vers ECR, les pull sur l'instance EC2 et démarrer les conteneurs.
+      # Pour ce projet, c'est beaucoup plus simple que la méthode traditionnelle de push les images Docker vers ECR, les pull sur l'instance EC2 et démarrer les conteneurs.
       - name: Deploy to AWS
         uses: easingthemes/ssh-deploy@main
         env:
@@ -55,6 +55,10 @@ jobs:
         run: |
           echo "Deployment completed successfully!"
           echo "Access ThingsBoard at http://$REMOTE_HOST"
+          echo ""
+          echo "Example of credentials:"
+          echo "- Tenant Administrator: tenant@thingsboard.org / tenant"
+          echo "- Customer User: customer@thingsboard.org / customer"
           echo ""
           echo "Notes:"
           echo "- It may take a few minutes for all services to be fully operational"
