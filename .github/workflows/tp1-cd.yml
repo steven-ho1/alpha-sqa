@@ -23,6 +23,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
+          set -eux
           python3 -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
@@ -56,6 +57,7 @@ jobs:
       - name: "SUCCESS: Confirm Deployment Success"
         if: success()
         run: |
+          set -eu
           echo "Deployment completed successfully!"
           echo "Access ThingsBoard at http://$REMOTE_HOST"
           echo ""
@@ -70,6 +72,7 @@ jobs:
       - name: "FAILURE: Clean up EC2"
         if: failure()
         run: |
+          set -ex
           source venv/bin/activate
           python cleanup.py
         working-directory: ec2-provision

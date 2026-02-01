@@ -43,6 +43,7 @@ jobs:
 
       - name: Build
         run: |
+          set -ex
           if [ "${{ steps.maven-cache.outputs.cache-hit }}" != "true" ]; then
             ./build.sh
           else
@@ -75,12 +76,14 @@ jobs:
       # Maintenant, je teste chaque module individuellement et seulement ceux avec des tests unitaires
       - name: Test netty-mqtt
         run: |
+          set -ex
           echo "=== Testing module: netty-mqtt ===" | tee -a test-netty-mqtt.log
           mvn -T 2C -pl "netty-mqtt" test | tee -a test-netty-mqtt.log
         working-directory: tp1
 
       - name: Test common
         run: |
+          set -ex
           echo "=== Testing module: common ===" | tee -a test-common.log
           MODULES=(
             "common/actor"
@@ -104,6 +107,7 @@ jobs:
 
       - name: Test rule-engine
         run: |
+          set -ex
           echo "=== Testing module: rule-engine ===" | tee -a test-rule-engine.log
           MODULES=(
             "rule-engine/rule-engine-api"
@@ -114,12 +118,14 @@ jobs:
 
       - name: Test dao
         run: |
+          set -ex
           echo "=== Testing module: dao ===" | tee -a test-dao.log
           mvn -T 2C -pl "dao" test | tee -a test-dao.log
         working-directory: tp1
 
       - name: Test edqs
         run: |
+          set -ex
           echo "=== Testing module: edqs ===" | tee -a test-edqs.log
           mvn -T 2C -pl "edqs" test | tee -a test-edqs.log
         working-directory: tp1
@@ -128,6 +134,7 @@ jobs:
       ## application est le seul module avec -fn (qui permet de continuer même en cas d'erreur) puisqu'il y a trop de tests qui échouent
       # - name: Test application
       #   run: |
+      #     set -ex
       #     echo "=== Testing module: application ===" | tee -a test-application.log
       #     mvn -T 2C -fn -pl "application" test | tee -a test-application.log
       #   working-directory: tp1
@@ -156,6 +163,7 @@ jobs:
       # Consulter README.md dans docker/
       - name: Launch ThingsBoard Services
         run: |
+          set -euxo pipefail
           ./docker-create-log-folders.sh
           ./docker-install-tb.sh --loadDemo
           ./docker-start-services.sh
@@ -163,6 +171,7 @@ jobs:
 
       - name: Verify ThingsBoard Execution
         run: |
+          set -ex
           # Timeout de 90 secondes
           for i in {1..18}; do
             if curl -If http://localhost; then
