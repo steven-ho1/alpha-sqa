@@ -37,7 +37,8 @@ jobs:
         with:
           path: ~/.m2/repository
           # https://stackoverflow.com/questions/57695362/github-actions-cache-repo-to-speed-up-maven-builds
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: maven-${{ hashFiles('**/pom.xml') }}
+          restore-key: maven
         id: maven-cache
 
       - name: Build
