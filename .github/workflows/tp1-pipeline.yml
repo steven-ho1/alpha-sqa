@@ -170,7 +170,7 @@ jobs:
         run: |
           # Timeout de 90 secondes
           for i in {1..18}; do
-            if curl -f http://localhost; then
+            if curl -If http://localhost; then
               echo "ThingsBoard verified"
               exit 0
             else
