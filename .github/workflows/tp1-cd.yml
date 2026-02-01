@@ -1,0 +1,66 @@
+name: TP1 CD
+
+on:
+  push:
+    branches:
+      - main
+
+# Le job deploy est exécuté uniquement pour les push sur la branche main (donc, après merge du PR).
+# À noter que la branche main est protégée et requiert un PR.
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Provision EC2 Instance
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+          # https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#setting-an-environment-variable
+          echo "REMOTE_HOST=$(python main.py)" >> $GITHUB_ENV
+        working-directory: ec2-provision
+
+      # https://www.baeldung.com/ops/github-actions-deploy-ec2
+      # On utilise l'action easingthemes/ssh-deploy pour nous connecter via SSH et transférer les fichiers.
+      # C'est beaucoup plus simple que la méthode traditionnelle de push les images Docker vers ECR, les pull sur l'instance EC2 et démarrer les conteneurs.
+      - name: Deploy to AWS
+        uses: easingthemes/ssh-deploy@main
+        env:
+          REMOTE_TARGET: thingsboard/
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "tp1/"
+          REMOTE_HOST: ${{ env.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ env.REMOTE_TARGET }}
+          SCRIPT_BEFORE: |
+            mkdir -p $REMOTE_TARGET
+          SCRIPT_AFTER: |
+            cd $REMOTE_TARGET
+            chmod +x *.sh
+            ./docker-create-log-folders.sh
+            ./docker-install-tb.sh --loadDemo
+            ./docker-start-services.sh
+
+      - name: "SUCCESS: Confirm Deployment Success"
+        if: success()
+        run: |
+          echo "Deployment completed successfully!"
+          echo "Access ThingsBoard at http://$REMOTE_HOST"
+          echo ""
+          echo "Notes:"
+          echo "- It may take a few minutes for all services to be fully operational"
+          echo "- The EC2 instance will shutdown in 20 minutes (or less if it was already provisioned before)"
+
+      - name: "FAILURE: Clean up EC2"
+        if: failure()
+        run: python cleanup.py
+        working-directory: ec2-provision
