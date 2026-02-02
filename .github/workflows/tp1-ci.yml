@@ -41,12 +41,17 @@ jobs:
           # https://stackoverflow.com/questions/57695362/github-actions-cache-repo-to-speed-up-maven-builds
           key: maven-${{ hashFiles('**/pom.xml', '**/src/**/*.java') }}
           restore-keys: maven
+        id: maven-cache
 
       - name: Build
         run: |
           set -e
-          chmod +x ./build.sh
-          ./build.sh
+          if [ "${{ steps.maven-cache.outputs.cache-hit }}" != "true" ]; then
+            chmod +x ./build.sh
+            ./build.sh
+          else
+            echo "Cache hit, skipping mvn clean install"
+          fi
         working-directory: tp1
 
   # TOOO: Test coverage?
