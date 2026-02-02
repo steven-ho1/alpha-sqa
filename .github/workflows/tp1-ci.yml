@@ -196,7 +196,7 @@ jobs:
           done
 
           if ! pg_isready -h localhost -U postgres -d thingsboard; then
-            echo "ERROR: PostgreSQL is not ready in time."
+            echo "ERROR: PostgreSQL is not ready in time." >&2
             exit 1
           fi
 
@@ -208,9 +208,9 @@ jobs:
       - name: Start ThingsBoard
         run: |
           set -e
-          java -jar application-4.2.1.1-boot.jar &
+          java -jar thingsboard-4.2.1.1-boot.jar &
           echo "ThingsBoard started"
-        working-directory: ~/.m2/repository/org/thingsboard/application/4.2.1.1
+        working-directory: tp1/application/target
 
       - name: Verify ThingsBoard Execution
         run: |
@@ -224,5 +224,5 @@ jobs:
             sleep 5
           done
 
-          echo "ERROR: ThingsBoard didn't start in time." 
+          echo "ERROR: ThingsBoard didn't start in time." >&2
           exit 1
