@@ -1,0 +1,132 @@
+name: TP1 CD
+
+on:
+  push:
+    branches:
+      - main
+      - ci/test-deploy
+
+# Le job deploy est exécuté uniquement pour les push sur la branche main (donc, après merge du PR).
+# À noter que la branche main est protégée et requiert un PR.
+
+jobs:
+  deploy:
+    name: Deploy
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      AWS_KEY_PAIR_NAME: ${{ secrets.AWS_KEY_PAIR_NAME }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - uses: actions/cache@v5
+        if: github.ref == 'refs/heads/ci/test-deploy'
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ hashFiles('**/pom.xml') }}
+        id: deploy-maven-cache
+
+      - name: Build
+        run: |
+          set -e
+          if [ "${{ steps.deploy-maven-cache.outputs.cache-hit }}" != "true" ]; then
+            chmod +x ./build.sh
+            ./build.sh
+          else
+            echo "Cache hit, skipping mvn clean install"
+          fi
+        working-directory: tp1
+
+      - name: Provision EC2 Instance
+        run: |
+          set -eu
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+          # https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-commands#setting-an-environment-variable
+          echo "REMOTE_HOST=$(python main.py)" >> $GITHUB_ENV
+        working-directory: ec2-provision
+
+      - name: Wait For Cloud-Init
+        timeout-minutes: 5
+        run: |
+          set -eu
+
+          # https://www.baeldung.com/ops/github-actions-deploy-ec2
+          echo "$SSH_PRIVATE_KEY" > default.pem
+          chmod 400 default.pem
+
+          # https://askubuntu.com/questions/127369/how-to-prevent-write-failed-broken-pipe-on-ssh-connection
+          # Étendre la durée des connexions SSH actives à maximum 30 minutes
+          mkdir -p ~/.ssh
+          cat <<'EOF' > ~/.ssh/config
+          Host *
+              ServerAliveInterval 60
+              ServerAliveCountMax 30
+          EOF
+
+          echo "Waiting for cloud-init to complete..."
+          until ssh -o StrictHostKeyChecking=no -i default.pem $REMOTE_USER@$REMOTE_HOST "cloud-init status --wait"; do
+            sleep 5
+          done
+
+        working-directory: tp1
+
+      - name: Deploy to AWS
+        run: |
+          set -euxo pipefail
+
+          rsync -rlgoDzvc -e "ssh -i default.pem" ./application/target/ $REMOTE_USER@$REMOTE_HOST:~/thingsboard/
+          ssh -i default.pem $REMOTE_USER@$REMOTE_HOST <<"EOF"
+            set -e
+
+            sudo mkdir -p /var/log/thingsboard
+            sudo chown $USER:$USER /var/log/thingsboard
+            
+            cd thingsboard/bin/install
+            chmod +x ./install_dev_db.sh
+            ./install_dev_db.sh
+
+            cd ../..
+            nohup java -jar thingsboard-4.2.1.1-boot.jar &
+          EOF
+
+          rm -f default.pem
+        working-directory: tp1
+
+      - name: Verify ThingsBoard Execution
+        timeout-minutes: 5
+        run: |
+          set -e
+          until curl -If http://$REMOTE_HOST:8080; do
+            echo "Waiting for ThingsBoard to be reachable..."
+            sleep 5
+          done
+
+      - name: "SUCCESS: Confirm Deployment Success"
+        if: success()
+        run: |
+          set -eu
+          echo "Deployment completed successfully!"
+          echo "Access ThingsBoard at http://$REMOTE_HOST:8080"
+          echo ""
+          echo "Example of credentials:"
+          echo "- tenant@thingsboard.org / tenant"
+          echo ""
+          echo "Notes:"
+          echo "- It may take a few minutes for all services to be fully operational"
+          echo "- The EC2 instance will shutdown in 20 minutes"
+
+      - name: "FAILURE: Clean up EC2"
+        if: failure()
+        run: |
+          set -e
+          source venv/bin/activate
+          python cleanup.py
+        working-directory: ec2-provision
