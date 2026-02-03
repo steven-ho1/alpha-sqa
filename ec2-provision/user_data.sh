@@ -29,7 +29,7 @@ until systemctl is-active --quiet docker && docker info >/dev/null 2>&1; do slee
 
 # Démarrer PostgreSQL dans un conteneur Docker
 docker run -d \
-  --name thingsboard-postgres \
+  --name tb-postgres \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=thingsboard \
