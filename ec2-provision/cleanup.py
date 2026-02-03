@@ -1,3 +1,5 @@
+from time import sleep
+
 import constants
 from botocore.exceptions import ClientError
 from logger import logger
@@ -11,7 +13,7 @@ def cleanup_resources():
     # Delete EC2 instance
     filters = [
         {"Name": "tag:Name", "Values": [constants.INSTANCE_NAME]},
-        {"Name": "instance-state-name", "Values": ["running", "pending"]},
+        {"Name": "instance-state-name", "Values": ["running", "pending", "stopped"]},
     ]
     instances = list(ec2.instances.filter(Filters=filters))
 
@@ -25,6 +27,8 @@ def cleanup_resources():
         for instance in instances:
             instance.wait_until_terminated()
 
+    logger.info("Instances terminated.")
+    sleep(5)
     # Delete created security group
     try:
         logger.info(

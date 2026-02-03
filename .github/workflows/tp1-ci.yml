@@ -38,6 +38,7 @@ jobs:
           path: |
             ~/.m2/repository
             tp1/application/target
+          # https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching
           # https://stackoverflow.com/questions/57695362/github-actions-cache-repo-to-speed-up-maven-builds
           key: maven-${{ hashFiles('**/pom.xml', '**/src/**/*.java') }}
         id: maven-cache
@@ -192,7 +193,7 @@ jobs:
       - name: Start ThingsBoard
         run: |
           set -e
-          java -jar thingsboard-4.2.1.1-boot.jar &
+          java -jar thingsboard-4.2.1.1-boot.jar > thingsboard.log 2>&1 &
           echo "ThingsBoard started"
         working-directory: tp1/application/target
 
