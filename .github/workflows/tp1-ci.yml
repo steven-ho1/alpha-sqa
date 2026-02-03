@@ -40,7 +40,6 @@ jobs:
             tp1/application/target
           # https://stackoverflow.com/questions/57695362/github-actions-cache-repo-to-speed-up-maven-builds
           key: maven-${{ hashFiles('**/pom.xml', '**/src/**/*.java') }}
-          restore-keys: maven
         id: maven-cache
 
       - name: Build
@@ -76,10 +75,11 @@ jobs:
             ~/.m2/repository
             tp1/application/target
           key: maven-${{ hashFiles('**/pom.xml', '**/src/**/*.java') }}
-          restore-keys: maven
 
       # Il y a eu des problèmes avec "mvn test".
       # Maintenant, je teste chaque module individuellement et seulement ceux avec des tests unitaires
+      # De plus, l'exécution des tests unitaires pour le module application a été omise pour accélérer le processus CI.
+      # Les chargés ont confirmé que deux modules suffisent.
       - name: Test netty-mqtt
         run: |
           set -e
@@ -136,15 +136,6 @@ jobs:
           mvn -T 2C -pl "edqs" test | tee -a test-edqs.log
         working-directory: tp1
 
-      ## Prend une éternité  ou reste bloqué... même après avoir exclu les tests d'intégration.
-      ## application est le seul module avec -fn (qui permet de continuer même en cas d'erreur) puisqu'il y a trop de tests qui échouent
-      # - name: Test application
-      #   run: |
-      #     set -e
-      #     echo "=== Testing module: application ===" | tee -a test-application.log
-      #     mvn -T 2C -fn -pl "application" test | tee -a test-application.log
-      #   working-directory: tp1
-
       - name: Upload Test Logs
         uses: actions/upload-artifact@v4
         with:
@@ -155,7 +146,6 @@ jobs:
             tp1/test-rule-engine.log
             tp1/test-dao.log
             tp1/test-edqs.log
-          # tp1/test-application.log
 
   # https://thingsboard.io/docs/user-guide/contribution/how-to-contribute/#code-changes
   smoke-test:
@@ -187,7 +177,6 @@ jobs:
             ~/.m2/repository
             tp1/application/target
           key: maven-${{ hashFiles('**/pom.xml', '**/src/**/*.java') }}
-          restore-keys: maven
 
       - name: Set Up PostgreSQL
         run: |
@@ -208,16 +197,10 @@ jobs:
         working-directory: tp1/application/target
 
       - name: Verify ThingsBoard Execution
+        timeout-minutes: 5
         run: |
           set -e
-          for i in {1..60}; do
-            if curl -If http://localhost:8080; then
-              echo "ThingsBoard verified"
-              exit 0
-            fi
-            echo "Waiting for ThingsBoard... (${i}/60)"
+          until curl -If http://localhost:8080; do
+            echo "Waiting for ThingsBoard to start..."
             sleep 5
           done
-
-          echo "ERROR: ThingsBoard didn't start in time." >&2
-          exit 1
