@@ -78,6 +78,7 @@ def get_or_provision_instance(name, user_data_path, instance_type):
 def provision_ec2_instance(name, user_data_path, instance_type):
     user_data = open(user_data_path).read()
 
+    logger.info("Provisioning...")
     params = dict(
         ImageId=constants.UBUNTU_AMI,
         MinCount=1,
