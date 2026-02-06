@@ -54,7 +54,6 @@ jobs:
           fi
         working-directory: tp1
 
-  # TOOO: Test coverage?
   unit-tests:
     name: Run Unit Tests
     runs-on: ubuntu-latest
