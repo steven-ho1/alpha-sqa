@@ -19,6 +19,9 @@ jobs:
       - name: Show memory info
         run: cat /proc/meminfo
 
+      - name: Show disk space
+        run: df -h
+
       - name: Show CPU info
         run: lscpu
 
