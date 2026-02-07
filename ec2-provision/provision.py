@@ -10,6 +10,13 @@ ec2 = boto3.resource(
     region_name=constants.REGION,
 )
 
+client = boto3.client(
+    "ec2",
+    aws_access_key_id=constants.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=constants.AWS_SECRET_ACCESS_KEY,
+    region_name=constants.REGION,
+)
+
 
 def validate_credentials():
     try:
@@ -19,6 +26,7 @@ def validate_credentials():
             "sts",
             aws_access_key_id=constants.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=constants.AWS_SECRET_ACCESS_KEY,
+            region_name=constants.REGION,
         )
         sts.get_caller_identity()
         logger.info("Credentials validated")
@@ -63,7 +71,7 @@ def ensure_security_group():
         return sg.group_id
 
 
-def get_or_provision_instance(name, user_data_path, instance_type):
+def provision_ec2_instance(name, user_data_path, instance_type):
     logger.info(f"⚙️  Provisioning {name} EC2 instance...")
 
     existing_instance = find_running_instance(name)
@@ -72,13 +80,12 @@ def get_or_provision_instance(name, user_data_path, instance_type):
             f"Found existing instance for {name}: ({existing_instance.id}, {existing_instance.public_ip_address})"
         )
         cleanup_resources()
-    return provision_ec2_instance(name, user_data_path, instance_type)
+    else:
+        logger.info(f"No existing instance found for {name}")
 
-
-def provision_ec2_instance(name, user_data_path, instance_type):
     user_data = open(user_data_path).read()
 
-    logger.info("Provisioning...")
+    logger.info("Provisioning now...")
     params = dict(
         ImageId=constants.UBUNTU_AMI,
         MinCount=1,
@@ -104,6 +111,7 @@ def provision_ec2_instance(name, user_data_path, instance_type):
     instance.wait_until_running()
     instance.reload()
     logger.info(f"{name} instance created")
+    allocate_elastic_ip(instance.id)
 
     logger.info(
         f"{name} provisioned (ID: {instance.id}, IP: {instance.public_ip_address})"
@@ -125,3 +133,16 @@ def find_running_instance(name):
     )
 
     return instances[0] if instances else None
+
+
+def allocate_elastic_ip(instance_id):
+    logger.info(
+        f"Allocating Elastic IP of ID {constants.ALLOCATION_ID} to new instance {instance_id}..."
+    )
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2/client/associate_address.html
+    client.associate_address(
+        AllocationId=constants.ALLOCATION_ID,
+        InstanceId=instance_id,
+        AllowReassociation=True,
+    )
+    logger.info("Allocation successful")
