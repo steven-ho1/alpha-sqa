@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main
-      - ci/test-deploy
 
-# Le job deploy est exécuté uniquement pour les push sur la branche main (donc, après merge du PR).
-# À noter que la branche main est protégée et requiert un PR.
+# Le job deploy est exécuté uniquement pour les push sur la branche main, donc après merge du PR
+# puisque la branche main est protégée et requiert un PR.
 
 jobs:
   build:
